@@ -1,0 +1,8 @@
+Flask
+scikit-learn
+plotly
+redis
+matplotlib
+numpy
+pandas
+nbformat>=4.2.0

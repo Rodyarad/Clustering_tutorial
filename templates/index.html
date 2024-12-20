@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кластеризация: K-Means и DBSCAN</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        p {
+            margin: 10px 0;
+        }
+        ul {
+            margin: 10px 0 20px 20px;
+        }
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .slider-container {
+            margin-bottom: 20px;
+        }
+        .slider-label {
+            display: inline-block;
+            width: 150px;
+        }
+        .slider-value {
+            display: inline-block;
+            width: 50px;
+            text-align: right;
+        }
+        .parameters-section {
+            margin-top: 40px;
+        }
+        button {
+            margin-top: 10px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Кластеризация: K-Means и DBSCAN</h1>
+
+<p>K-Means — это метод кластеризации, который группирует данные в заранее заданное количество кластеров (K). Алгоритм минимизирует расстояние между объектами внутри каждого кластера и его центром (центроидом).</p>
+
+    <h3>Этапы алгоритма:</h3>
+    <ul>
+        <li><strong>Инициализация</strong>: Выбор K случайных центроидов или их инициализация методом <code>k-means++</code> для лучшей сходимости.</li>
+        <li><strong>Шаг назначения</strong>: Каждая точка данных назначается ближайшему центроиду, создавая кластеры.</li>
+        <li><strong>Шаг обновления</strong>: Для каждого кластера вычисляется новый центроид как среднее всех точек в кластере.</li>
+        <li><strong>Повторение</strong>: Шаги 2 и 3 повторяются до тех пор, пока центроиды не перестанут изменяться или не будет достигнут критерий остановки (например, максимальное число итераций).</li>
+    </ul>
+
+    <h3>Гиперпараметры:</h3>
+    <ul>
+        <li><strong>K</strong> — количество кластеров, которое должно быть задано заранее.</li>
+        <li><strong>Количество итераций</strong> — максимальное число итераций для поиска оптимальных центроидов.</li>
+        <li><strong>Метод инициализации</strong> — способ выбора начальных центроидов (<code>random</code> или <code>k-means++</code>).</li>
+        <li><strong>Критерий сходимости</strong> — условие завершения работы алгоритма (например, минимальное изменение центроидов между итерациями).</li>
+    </ul>
+
+    <h2>DBSCAN</h2>
+
+    <p>DBSCAN — это метод кластеризации на основе плотности, который позволяет автоматически определять количество кластеров и может работать с кластерами произвольной формы, включая обнаружение выбросов (шумов). Алгоритм группирует точки, находящиеся в областях с высокой плотностью, в кластеры, а точки в областях с низкой плотностью помечает как шум.</p>
+
+    <h3>Этапы алгоритма:</h3>
+    <ul>
+        <li><strong>Основная точка</strong>: Для каждой точки проверяется, является ли она основной точкой, т.е. имеет ли она не менее <code>MinPts</code> соседей в радиусе <code>ε</code>.</li>
+        <li><strong>Расширение кластера</strong>: Если точка является основной, она образует кластер. Все точки в радиусе <code>ε</code> добавляются в кластер, и для них также проверяется условие плотности.</li>
+        <li><strong>Повторение</strong>: Процесс продолжается для каждой новой точки кластера, пока не будут найдены все плотные точки.</li>
+        <li><strong>Шум</strong>: Точки, которые не могут быть отнесены к какому-либо кластеру (не имеют достаточного числа соседей), помечаются как шум.</li>
+    </ul>
+
+    <h3>Гиперпараметры:</h3>
+    <ul>
+        <li><strong>eps (ε)</strong> — радиус окрестности вокруг точки, внутри которого измеряется плотность.</li>
+        <li><strong>MinPts</strong> — минимальное количество точек, необходимое для того, чтобы точка считалась основной и могла начать кластеризацию.</li>
+    </ul>
+
+    <div class="parameters-section">
+        <h2>Настройка гиперпараметров</h2>
+        <h3>K-Means</h3>
+        <div class="slider-container">
+            <label class="slider-label" for="k_value">Количество кластеров (K):</label>
+            <input type="range" id="k_value" name="k_value" min="1" max="10" value="3" oninput="this.nextElementSibling.value = this.value">
+            <output class="slider-value">3</output>
+        </div>
+
+        <div class="slider-container">
+            <label class="slider-label" for="iterations_value">Макс. итераций:</label>
+            <input type="range" id="iterations_value" name="iterations_value" min="100" max="1000" value="300" oninput="this.nextElementSibling.value = this.value">
+            <output class="slider-value">300</output>
+        </div>
+
+        <h3>DBSCAN</h3>
+        <div class="slider-container">
+            <label class="slider-label" for="eps_value">Радиус (eps):</label>
+            <input type="range" id="eps_value" name="eps_value" min="0.1" max="2.0" step="0.1" value="0.5" oninput="this.nextElementSibling.value = this.value">
+            <output class="slider-value">0.5</output>
+        </div>
+
+        <div class="slider-container">
+            <label class="slider-label" for="minpts_value">MinPts:</label>
+            <input type="range" id="minpts_value" name="minpts_value" min="1" max="20" value="5" oninput="this.nextElementSibling.value = this.value">
+            <output class="slider-value">5</output>
+        </div>
+
+        <button type="button" onclick="sendData()">Применить</button>
+
+        <h3>Текущие значения гиперпараметров:</h3>
+        <ul id="parameters-output">
+            <li>K-Means: K = 3, Max Iterations = 300</li>
+            <li>DBSCAN: eps = 0.5, MinPts = 5</li>
+        </ul>
+    </div>
+
+    <script>
+        function sendData() {
+            var k_value = document.getElementById("k_value").value;
+            var iterations_value = document.getElementById("iterations_value").value;
+            var eps_value = document.getElementById("eps_value").value;
+            var minpts_value = document.getElementById("minpts_value").value;
+
+            $.ajax({
+                url: '/update_parameters',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    k_value: k_value,
+                    iterations_value: iterations_value,
+                    eps_value: eps_value,
+                    minpts_value: minpts_value
+                }),
+                success: function(response) {
+                    // Обновляем текст на странице с новыми значениями параметров
+                    $('#parameters-output').html(
+                        '<li>K-Means: K = ' + response.k_value + ', Max Iterations = ' + response.iterations_value + '</li>' +
+                        '<li>DBSCAN: eps = ' + response.eps_value + ', MinPts = ' + response.minpts_value + '</li>'
+                    );
+                }
+            });
+        }
+    </script>
+</body>
+</html>
