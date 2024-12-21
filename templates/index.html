@@ -44,10 +44,12 @@
         }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
     <h1>Кластеризация: K-Means и DBSCAN</h1>
 
+<h2>K-Means</h2>
 <p>K-Means — это метод кластеризации, который группирует данные в заранее заданное количество кластеров (K). Алгоритм минимизирует расстояние между объектами внутри каждого кластера и его центром (центроидом).</p>
 
     <h3>Этапы алгоритма:</h3>
@@ -66,6 +68,23 @@
         <li><strong>Критерий сходимости</strong> — условие завершения работы алгоритма (например, минимальное изменение центроидов между итерациями).</li>
     </ul>
 
+    <div class="parameters-section">
+        <h3>K-Means</h3>
+        <div class="slider-container">
+            <label class="slider-label" for="k_value">Количество кластеров (K):</label>
+            <input type="range" id="k_value" name="k_value" min="1" max="10" value="3" oninput="this.nextElementSibling.value = this.value">
+            <output class="slider-value">3</output>
+        </div>
+        <div class="slider-container">
+            <label class="slider-label" for="kmeans_dataset">Выбор датасета:</label>
+            <input type="range" id="kmeans_dataset" name="kmeans_dataset" min="1" max="3" step="1" value="2" oninput="this.nextElementSibling.value = this.value">
+            <output class="slider-value">2</output>
+        </div>
+    </div>
+
+    <button type="button" onclick="sendKMeansData()">Применить KMeans</button>
+    <div id="kmeans_graph"></div>
+
     <h2>DBSCAN</h2>
 
     <p>DBSCAN — это метод кластеризации на основе плотности, который позволяет автоматически определять количество кластеров и может работать с кластерами произвольной формы, включая обнаружение выбросов (шумов). Алгоритм группирует точки, находящиеся в областях с высокой плотностью, в кластеры, а точки в областях с низкой плотностью помечает как шум.</p>
@@ -81,29 +100,14 @@
     <h3>Гиперпараметры:</h3>
     <ul>
         <li><strong>eps (ε)</strong> — радиус окрестности вокруг точки, внутри которого измеряется плотность.</li>
-        <li><strong>MinPts</strong> — минимальное количество точек, необходимое для того, чтобы точка считалась основной и могла начать кластеризацию.</li>
+        <li><strong>MinPts</strong> — это параметр, который указывает минимальное количество точек, необходимых для формирования нового кластера.</li>
     </ul>
 
     <div class="parameters-section">
-        <h2>Настройка гиперпараметров</h2>
-        <h3>K-Means</h3>
-        <div class="slider-container">
-            <label class="slider-label" for="k_value">Количество кластеров (K):</label>
-            <input type="range" id="k_value" name="k_value" min="1" max="10" value="3" oninput="this.nextElementSibling.value = this.value">
-            <output class="slider-value">3</output>
-        </div>
-
-        <div class="slider-container">
-            <label class="slider-label" for="iterations_value">Макс. итераций:</label>
-            <input type="range" id="iterations_value" name="iterations_value" min="100" max="1000" value="300" oninput="this.nextElementSibling.value = this.value">
-            <output class="slider-value">300</output>
-        </div>
-
-        <h3>DBSCAN</h3>
         <div class="slider-container">
             <label class="slider-label" for="eps_value">Радиус (eps):</label>
-            <input type="range" id="eps_value" name="eps_value" min="0.1" max="2.0" step="0.1" value="0.5" oninput="this.nextElementSibling.value = this.value">
-            <output class="slider-value">0.5</output>
+            <input type="range" id="eps_value" name="eps_value" min="0.1" max="1" step="0.1" value="0.2" oninput="this.nextElementSibling.value = this.value">
+            <output class="slider-value">0.2</output>
         </div>
 
         <div class="slider-container">
@@ -112,38 +116,54 @@
             <output class="slider-value">5</output>
         </div>
 
-        <button type="button" onclick="sendData()">Применить</button>
+        <div class="slider-container">
+            <label class="slider-label" for="dbscan_dataset">Выбор датасета:</label>
+            <input type="range" id="dbscan_dataset" name="dbscan_dataset" min="1" max="3" step="1" value="2" oninput="this.nextElementSibling.value = this.value">
+            <output class="slider-value">2</output>
+        </div>
 
-        <h3>Текущие значения гиперпараметров:</h3>
-        <ul id="parameters-output">
-            <li>K-Means: K = 3, Max Iterations = 300</li>
-            <li>DBSCAN: eps = 0.5, MinPts = 5</li>
-        </ul>
     </div>
 
-    <script>
-        function sendData() {
-            var k_value = document.getElementById("k_value").value;
-            var iterations_value = document.getElementById("iterations_value").value;
-            var eps_value = document.getElementById("eps_value").value;
-            var minpts_value = document.getElementById("minpts_value").value;
+    <button type="button" onclick="sendDBSCANData()">Применить DBSCAN</button>
+    <div id="dbscan_graph"></div>
 
+
+    <script>
+        function sendKMeansData() {
+            var k_value = document.getElementById("k_value").value;
+            var kmeans_dataset = document.getElementById("kmeans_dataset").value;
             $.ajax({
-                url: '/update_parameters',
+                url: '/update_kmeans_parameters',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
                     k_value: k_value,
-                    iterations_value: iterations_value,
-                    eps_value: eps_value,
-                    minpts_value: minpts_value
+                    kmeans_dataset: kmeans_dataset,
                 }),
                 success: function(response) {
-                    // Обновляем текст на странице с новыми значениями параметров
-                    $('#parameters-output').html(
-                        '<li>K-Means: K = ' + response.k_value + ', Max Iterations = ' + response.iterations_value + '</li>' +
-                        '<li>DBSCAN: eps = ' + response.eps_value + ', MinPts = ' + response.minpts_value + '</li>'
-                    );
+                    var kmeans_graph = JSON.parse(response.kmeans_graph);
+                    Plotly.newPlot('kmeans_graph', kmeans_graph.data, kmeans_graph.layout);
+                }
+            });
+        }
+
+        function sendDBSCANData() {
+            var eps_value = document.getElementById("eps_value").value;
+            var minpts_value = document.getElementById("minpts_value").value;
+            var dbscan_dataset = document.getElementById("dbscan_dataset").value;
+
+            $.ajax({
+                url: '/update_dbscan_parameters',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    eps_value: eps_value,
+                    minpts_value: minpts_value,
+                    dbscan_dataset: dbscan_dataset,
+                }),
+                success: function(response) {
+                    var dbscan_graph = JSON.parse(response.dbscan_graph);
+                    Plotly.newPlot('dbscan_graph', dbscan_graph.data, dbscan_graph.layout);
                 }
             });
         }

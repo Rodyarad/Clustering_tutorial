@@ -11,6 +11,4 @@ RUN pip install -r requirements.txt
 
 EXPOSE 5000
 
-CMD ["bash"]
-
-# CMD redis-server --daemonize yes && python app.py
+CMD redis-server --daemonize yes && python app.py
